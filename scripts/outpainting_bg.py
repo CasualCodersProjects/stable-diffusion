@@ -11,10 +11,11 @@ from PIL import Image
 from PIL.Image import Image as ImageClass
 import numpy as np
 
+# because of the way esrgan's upscaler is implemented, we can't make the
+# script into a CLI tool easily. For now we'll just edit the script.
 output_dir = os.path.join(os.getcwd(), 'outputs', 'outpainting')
 working_dir = os.path.join(output_dir, 'tmp')
-device = 'mps' if sys.platform == 'darwin' else choose_torch_device()
-prompt = 'astronaut floating in space. planets in the background. 35 mm. nightmare. depth of field. vivid colors. photorealistic. photography. 8k. artstation. ultra detailed. octane. bokeh.'
+prompt = 'a giant dog destroying a city. nightmare. 8k. octane. digital art. artstation. vivid colors.'
 height = 512
 img = ''
 width = 512
@@ -141,7 +142,7 @@ if __name__ == '__main__':
     if not os.path.exists(working_dir):
         os.makedirs(working_dir)
 
-    sd = Generate(device_type=device)
+    sd = Generate()
     # to make a 16:9 image at 512 generation, we only need to expand 200 pixels in either direction
 
     image_path = img
