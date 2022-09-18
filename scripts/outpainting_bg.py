@@ -1,12 +1,10 @@
 import random
-import sys
 import time
 import os
 from typing import Tuple
 import shutil
 from ldm.outpainting_utils import edge_pad
 from ldm.generate import Generate
-from ldm.dream.devices import choose_torch_device
 from PIL import Image
 from PIL.Image import Image as ImageClass
 import numpy as np
@@ -15,16 +13,8 @@ import numpy as np
 # script into a CLI tool easily. For now we'll just edit the script.
 output_dir = os.path.join(os.getcwd(), 'outputs', 'outpainting')
 working_dir = os.path.join(output_dir, 'tmp')
-prompt = 'a giant dog destroying a city. nightmare. 8k. octane. digital art. artstation. vivid colors.'
 height = 512
-img = ''
 width = 512
-steps = 50
-upscale = True
-keep_original = False
-clean = True
-vertical = True
-jpeg = True
 
 
 def edgify(img: np.ndarray) -> ImageClass:
@@ -121,7 +111,7 @@ def combine_images(right_path: str, left_path: str, vertical=False, jpeg=False) 
     return final_image, final_image_path, final_image_upscaled_path
 
 
-def run_upscale(sd: Generate, input_image: ImageClass, input_seed: int, input_path: str, output_path: str) -> None:
+def run_upscale(sd: Generate, input_image: ImageClass, input_seed: int, input_path: str, output_path: str, keep_original=False) -> None:
     # callback for upscaling
     def cb(image, seed, upscaled=None):
         if not upscaled:
@@ -137,12 +127,13 @@ def run_upscale(sd: Generate, input_image: ImageClass, input_seed: int, input_pa
         image_list=[(input_image, input_seed)], image_callback=cb, upscale=(4, 0.75))
 
 
-if __name__ == '__main__':
+def outpainting_bg(prompt, img='', steps=50, upscale=True, keep_original=False, clean=True, vertical=False, jpeg=True, sd=None):
 
     if not os.path.exists(working_dir):
         os.makedirs(working_dir)
 
-    sd = Generate()
+    if not sd:
+        sd = Generate()
     # to make a 16:9 image at 512 generation, we only need to expand 200 pixels in either direction
 
     image_path = img
@@ -176,7 +167,7 @@ if __name__ == '__main__':
     if upscale:
         print("Upscaling...")
         run_upscale(sd, final_image, seed, final_image_path,
-                    final_image_upscaled_path)
+                    final_image_upscaled_path, keep_original=keep_original)
 
     if clean:
         print("Cleaning up....")
@@ -189,3 +180,9 @@ if __name__ == '__main__':
             f"Done! Image can be found at {final_image_upscaled_path}")
         if keep_original:
             print(f"Original image can be found at {final_image_path}")
+
+
+if __name__ == '__main__':
+    prompt = 'a giant dog destroying a city. nightmare. 8k. octane. digital art. artstation. vivid colors.'
+    print('Using prompt "', prompt, '"')
+    outpainting_bg(prompt, vertical=False, upscale=True, jpeg=True)
