@@ -199,3 +199,4 @@ models/ldm/stable-diffusion-v1/model.sha256
 
 # GFPGAN model files
 gfpgan/
+test_images/
