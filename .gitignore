@@ -186,3 +186,4 @@ testtube
 checkpoints
 # If it's a Mac
 .DS_Store
+test_images/
