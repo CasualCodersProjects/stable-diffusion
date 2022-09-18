@@ -111,14 +111,14 @@ def combine_images(right_path: str, left_path: str, vertical=False, jpeg=False) 
     return final_image, final_image_path, final_image_upscaled_path
 
 
-def run_upscale(sd: Generate, input_image: ImageClass, input_seed: int, input_path: str, output_path: str, keep_original=False) -> None:
+def run_upscale(sd: Generate, input_image: ImageClass, input_seed: int, input_path: str, output_path: str, keep_original=False, output_height=2160, output_width=3840) -> None:
     # callback for upscaling
     def cb(image, seed, upscaled=None):
         if not upscaled:
             print("Upscaling failed. Saving original image...")
             return
         # convert the image to jpeg
-        image.save(output_path)
+        image.resize((output_width, output_height), 1).save(output_path)
 
         if not keep_original:
             os.remove(input_path)
@@ -127,7 +127,7 @@ def run_upscale(sd: Generate, input_image: ImageClass, input_seed: int, input_pa
         image_list=[(input_image, input_seed)], image_callback=cb, upscale=(4, 0.75))
 
 
-def outpainting_bg(prompt, img='', steps=50, upscale=True, keep_original=False, clean=True, vertical=False, jpeg=True, sd=None):
+def outpainting_bg(prompt, img='', steps=50, upscale=True, keep_original=False, clean=True, vertical=False, jpeg=True, sd=None, output_height=2160, output_width=3840):
 
     if not os.path.exists(working_dir):
         os.makedirs(working_dir)
@@ -167,7 +167,7 @@ def outpainting_bg(prompt, img='', steps=50, upscale=True, keep_original=False, 
     if upscale:
         print("Upscaling...")
         run_upscale(sd, final_image, seed, final_image_path,
-                    final_image_upscaled_path, keep_original=keep_original)
+                    final_image_upscaled_path, keep_original=keep_original, output_height=output_height, output_width=output_width)
 
     if clean:
         print("Cleaning up....")
@@ -183,6 +183,6 @@ def outpainting_bg(prompt, img='', steps=50, upscale=True, keep_original=False, 
 
 
 if __name__ == '__main__':
-    prompt = 'a giant dog destroying a city. nightmare. 8k. octane. digital art. artstation. vivid colors.'
+    prompt = 'A burning airship over a destroyed city, 4k, nightmare, vivid colors, trending on artstation'
     print('Using prompt "', prompt, '"')
     outpainting_bg(prompt, vertical=False, upscale=True, jpeg=True)
