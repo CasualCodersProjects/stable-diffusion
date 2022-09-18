@@ -6,11 +6,9 @@ import math
 
 output_dir = os.path.join(os.getcwd(), 'outputs', 'backgrounds')
 working_dir = os.path.join(output_dir, 'tmp')
-height = 512
-width = 1024
 
 
-def main(prompt):
+def main(prompt, width=1024, height=512, vertical=False):
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
 
@@ -29,12 +27,23 @@ def main(prompt):
 
     # crop 16:9 samples
     frac = 16/9
-    crop_width = math.floor(output_height * frac)
-    crops = {
-        'left': img.crop((0, 0, crop_width, output_height)),
-        'right': img.crop((output_width - crop_width, 0, crop_width, output_height)),
-        'center': img.crop((math.floor((output_width - crop_width) / 2), 0, crop_width, output_height))
-    }
+
+    crops = {}
+
+    if vertical:
+        crop_height = math.floor(output_width * frac)
+        crops = {
+            'top': img.crop((0, 0, output_width, crop_height)),
+            'bottom': img.crop((0, output_height - crop_height, output_width, crop_height)),
+            'center': img.crop((0, math.floor((output_height - crop_height) / 2), output_width, crop_height))
+        }
+    else:
+        crop_width = math.floor(output_height * frac)
+        crops = {
+            'left': img.crop((0, 0, crop_width, output_height)),
+            'right': img.crop((output_width - crop_width, 0, crop_width, output_height)),
+            'center': img.crop((math.floor((output_width - crop_width) / 2), 0, crop_width, output_height))
+        }
 
     stddev_dict = {}
     for crop in crops:
@@ -43,8 +52,10 @@ def main(prompt):
     # get the one with the highest stddev
     best_crop = max(stddev_dict, key=stddev_dict.get)
 
+    size = (2160, 3840) if vertical else (3840, 2160)
+
     # resized to 2160p
-    img = crops[best_crop].resize((3840, 2160), 1)
+    img = crops[best_crop].resize(size, 1)
 
     # save the image
     img.convert('RGB').save(os.path.join(
@@ -52,4 +63,8 @@ def main(prompt):
 
 
 if __name__ == '__main__':
-    main('seductive anime girl as a garden fairy l, hourglass slim figure, red hair hair, attractive features, tight fitted tank top, body portrait, slight smile, highly detailed, digital painting, artstation, concept art, sharp focus, illustration, art by WLOP and greg rutkowski and alphonse mucha and artgerm')
+    prompt = 'seductive anime girl as a garden fairy l, hourglass slim figure, red hair hair, attractive features, tight fitted tank top, body portrait, slight smile, highly detailed, digital painting, artstation, concept art, sharp focus, illustration, art by WLOP and greg rutkowski and alphonse mucha and artgerm'
+    height = 1024
+    width = 512
+    vertical = True
+    main(prompt, width=width, height=height, vertical=vertical)
